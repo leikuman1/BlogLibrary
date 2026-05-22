@@ -1,0 +1,14 @@
+slug: "ai-companion"
+title: "AI 伴侣"
+subtitle: "模型与陪伴式 AI 思考"
+description: "记录 AI 伴侣方向的模型、体验和产品思考。"
+tags:
+  - "AI"
+  - "产品思考"
+  - "大模型"
+status: "active"
+order: 70
+sections:
+  - id: "model"
+    title: "模型"
+    order: 1

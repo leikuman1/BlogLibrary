@@ -1,0 +1,60 @@
+---
+title: "中间件和依赖注入"
+slug: "middleware-dependency-injection"
+book: "fastapi"
+section: "basics"
+order: 2
+date: 2026-04-25
+updated: 2026-04-25
+tags:
+  - "后端"
+  - "Python"
+  - "API"
+summary: "中间件是一个函数，它可以在请求被处理之前或之后执行一些操作。中间件可以用于处理跨域请求、日志记录、身份验证等。类似于Spring中的AOP思想。"
+draft: false
+---
+## 中间件
+
+中间件是一个函数，它可以在请求被处理之前或之后执行一些操作。中间件可以用于处理跨域请求、日志记录、身份验证等。类似于Spring中的AOP思想。
+
+可以通过middleware装饰器来定义一个中间件函数，如：
+
+```python
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+app = FastAPI()
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Process-Time"] = "0.1s"
+    return response
+```
+
+这里的add_process_time_header函数是一个中间件函数，它在请求被处理之前执行，调用call_next(request)来继续处理请求，并在响应中添加一个自定义的头部X-Process-Time。
+
+这里还需要注意，如果有多个中间件，执行顺序是按照定义的顺序执行的。
+而且执行方式类似于递归调用，先执行第一个中间件，调用call_next(request)来继续处理请求，进入下一个中间件，直到最后一个中间件处理完请求后返回响应，然后依次返回到上一个中间件，最后返回给客户端。
+所以定义越早的中间件越先执行，定义越晚的中间件越后执行，但是返回响应的顺序是相反的，定义越早的中间件越后返回，定义越晚的中间件越先返回。
+
+## 依赖注入
+
+依赖注入是一种设计模式，它允许我们将一个对象的依赖关系从对象本身中分离出来，使得代码更加模块化和可测试。在FastAPI中，依赖注入是通过Depends函数来实现的。说人话就是复用相同的代码。
+
+例如，我们有一个函数get_db()来获取数据库连接，我们可以将这个函数作为一个依赖注入到其他函数中，如：
+
+```python
+from fastapi import Depends
+def get_db():
+    db = "数据库连接"
+    try:
+        yield db
+    finally:
+        print("关闭数据库连接")
+@app.get("/items/")
+async def read_items(db: str = Depends(get_db)):
+    return {"db": db}
+```
+
+这里的get_db函数是一个依赖函数，它返回一个数据库连接。在read_items函数中，我们使用Depends(get_db)来注入这个依赖，这样当我们调用read_items函数时，FastAPI会自动调用get_db函数来获取数据库连接，并将其作为参数传递给read_items函数。
+
+依赖注入的好处是可以将公共的代码抽离出来，避免重复代码，提高代码的可维护性和可测试性。

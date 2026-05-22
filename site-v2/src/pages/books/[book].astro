@@ -1,0 +1,93 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { formatDate, latestChapterDate, sectionTitle, sortChapters } from '../../lib/catalog';
+
+export async function getStaticPaths() {
+  const books = await getCollection('books');
+  return books.map((book) => ({
+    params: { book: book.data.slug },
+    props: { book },
+  }));
+}
+
+const { book } = Astro.props;
+const chapters = (await getCollection('chapters')).filter(
+  (chapter) => chapter.data.book === book.data.slug && !chapter.data.draft,
+);
+const sortedChapters = sortChapters(chapters, book);
+const updated = formatDate(latestChapterDate(sortedChapters));
+const chaptersBySection = new Map<string, typeof sortedChapters>();
+
+for (const chapter of sortedChapters) {
+  const group = chaptersBySection.get(chapter.data.section) ?? [];
+  group.push(chapter);
+  chaptersBySection.set(chapter.data.section, group);
+}
+---
+
+<BaseLayout title={book.data.title} description={book.data.description}>
+  <main class="site-shell page-main">
+    <div class="breadcrumb">
+      <a href="/">图书馆</a>
+      <span>/</span>
+      <span>{book.data.title}</span>
+    </div>
+
+    <div class="page-grid">
+      <aside class="side-panel">
+        <div class="book-cover variant-green">
+          {book.data.coverImage ? <img src={book.data.coverImage} alt="" loading="lazy" /> : null}
+          <div class="book-cover-text">
+            <span class="book-cover-initial">{book.data.title.slice(0, 1).toUpperCase()}</span>
+            <span class="book-cover-label">{book.data.title}</span>
+          </div>
+        </div>
+        <div class="mini-tags" style="margin-top: 14px;">
+          {book.data.tags.map((tag) => <a class="mini-tag" href={`/tags/${encodeURIComponent(tag)}/`}>{tag}</a>)}
+        </div>
+        <p class="small-muted" style="margin: 14px 0 0;">{sortedChapters.length} 章 · 更新于 {updated}</p>
+      </aside>
+
+      <section class="content-panel">
+        <h1 class="page-title">{book.data.title}</h1>
+        <p class="page-lead">{book.data.description}</p>
+
+        <div class="section-list">
+          {book.data.sections.map((section) => {
+            const sectionChapters = chaptersBySection.get(section.id) ?? [];
+            return (
+              <section class="section-block">
+                <h2 class="section-heading">{section.title}</h2>
+                {sectionChapters.length > 0 ? (
+                  <div class="chapter-list">
+                    {sectionChapters.map((chapter) => (
+                      <a class="chapter-link" href={`/books/${book.data.slug}/${chapter.data.slug}/`}>
+                        <strong>{chapter.data.title}</strong>
+                        <span>{chapter.data.summary}</span>
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <p class="small-muted">待补充章节。</p>
+                )}
+              </section>
+            );
+          })}
+
+          {sortedChapters
+            .filter((chapter) => !book.data.sections.some((section) => section.id === chapter.data.section))
+            .map((chapter) => (
+              <section class="section-block">
+                <h2 class="section-heading">{sectionTitle(book, chapter.data.section)}</h2>
+                <a class="chapter-link" href={`/books/${book.data.slug}/${chapter.data.slug}/`}>
+                  <strong>{chapter.data.title}</strong>
+                  <span>{chapter.data.summary}</span>
+                </a>
+              </section>
+            ))}
+        </div>
+      </section>
+    </div>
+  </main>
+</BaseLayout>

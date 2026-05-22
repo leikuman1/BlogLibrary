@@ -1,0 +1,17 @@
+slug: "git"
+title: "Git"
+subtitle: "版本控制与团队协作"
+description: "Git 基础命令、分支模型、冲突处理和团队协作实践。"
+tags:
+  - "工程化"
+  - "团队协作"
+  - "版本控制"
+status: "active"
+order: 10
+sections:
+  - id: "basics"
+    title: "基本操作"
+    order: 1
+  - id: "teamwork"
+    title: "应用 Git 管理团队"
+    order: 2

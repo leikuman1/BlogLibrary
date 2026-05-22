@@ -1,0 +1,27 @@
+---
+import { getCollection } from 'astro:content';
+import LibraryAdminWidget from '../components/LibraryAdminWidget';
+import LibraryShelf from '../components/LibraryShelf';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { makeBookCards, uniqueTags } from '../lib/catalog';
+
+const books = await getCollection('books');
+const chapters = (await getCollection('chapters')).filter((chapter) => !chapter.data.draft);
+const bookCards = makeBookCards(books, chapters);
+const tags = uniqueTags(books);
+---
+
+<BaseLayout title="L's Library" description="以图书馆方式组织知识点的个人技术博客。">
+  <main class="site-shell library-hero">
+    <section class="hero-header" aria-labelledby="library-title">
+      <span class="hero-kicker">Knowledge Library</span>
+      <h1 id="library-title" class="hero-title">把知识点收进书架。</h1>
+      <p class="hero-copy">
+        每本书是一类知识主题，章节按目录组织，标签负责横向检索。Agent 管理员会先作为静态角色值班，真正对话能力留到后续版本。
+      </p>
+    </section>
+
+    <LibraryShelf books={bookCards} tags={tags} client:load />
+  </main>
+  <LibraryAdminWidget client:load />
+</BaseLayout>

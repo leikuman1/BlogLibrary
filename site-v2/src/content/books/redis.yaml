@@ -1,0 +1,17 @@
+slug: "redis"
+title: "Redis"
+subtitle: "数据结构与缓存实践"
+description: "Redis 常用数据结构、命令和后端开发中的缓存使用场景。"
+tags:
+  - "后端"
+  - "数据库"
+  - "缓存"
+status: "active"
+order: 40
+sections:
+  - id: "structures"
+    title: "常用数据结构"
+    order: 1
+  - id: "practice"
+    title: "应用实践"
+    order: 2

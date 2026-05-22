@@ -1,0 +1,17 @@
+slug: "agent"
+title: "Agent"
+subtitle: "智能体概念与设计范式"
+description: "围绕 Agent 的基本概念、设计范式和实践边界整理笔记。"
+tags:
+  - "AI"
+  - "Agent"
+  - "大模型"
+status: "active"
+order: 60
+sections:
+  - id: "concept"
+    title: "基础概念"
+    order: 1
+  - id: "patterns"
+    title: "设计范式"
+    order: 2

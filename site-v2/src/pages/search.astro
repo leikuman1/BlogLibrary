@@ -1,0 +1,25 @@
+---
+import { getCollection } from 'astro:content';
+import SiteSearch from '../components/SiteSearch';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { makeSearchItems } from '../lib/catalog';
+
+const books = await getCollection('books');
+const chapters = (await getCollection('chapters')).filter((chapter) => !chapter.data.draft);
+const items = makeSearchItems(books, chapters);
+---
+
+<BaseLayout title="站内搜索" description="搜索书籍、章节与标签。">
+  <main class="site-shell page-main">
+    <section class="hero-header">
+      <div class="breadcrumb">
+        <a href="/">图书馆</a>
+        <span>/</span>
+        <span>搜索</span>
+      </div>
+      <h1 class="page-title">站内搜索</h1>
+      <p class="page-lead">搜索范围包含书籍元数据和章节摘要，后续可升级为静态全文索引。</p>
+    </section>
+    <SiteSearch items={items} client:load />
+  </main>
+</BaseLayout>

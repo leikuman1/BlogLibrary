@@ -1,0 +1,59 @@
+---
+title: "SqlAIchemy的增删改"
+slug: "sqlalchemy-cud"
+book: "fastapi"
+section: "database"
+order: 4
+date: 2026-04-25
+updated: 2026-04-25
+tags:
+  - "SQLAlchemy"
+  - "后端"
+  - "Python"
+  - "API"
+summary: "先新建一个DTO类来接收请求体参数："
+draft: false
+---
+## 增加
+
+先新建一个DTO类来接收请求体参数：
+
+```python
+from pydantic import BaseModel
+class ItemCreate(BaseModel):
+    name: str
+    description: str
+    price: float
+```
+
+然后在路由函数中使用这个DTO类来接收请求体参数，并把它转换为ORM模型对象来进行数据库操作：
+
+```python
+@app.post("/items/")
+async def create_item(item: ItemCreate, db: AsyncSession = Depends(get_db)):
+    item_obj = Item(**item.dict())
+    db.add(item_obj)
+    await db.commit()
+    await db.refresh(item_obj)
+    return item_obj
+```
+
+这里的item: ItemCreate表示这个参数是一个请求体参数，FastAPI会自动将请求体中的JSON数据解析成一个ItemCreate对象，并传递给create_item函数。然后我们通过item.dict()方法将DTO对象转换为一个字典，再通过**操作符将字典解包成关键字参数来创建一个ORM模型对象item_obj。最后我们将这个对象添加到数据库会话中，提交事务，并刷新对象以获取数据库生成的ID等字段，最后返回这个对象。
+
+注意还要先定义好ORM模型类Item，并且在数据库中创建好对应的表。就是那个类定义里有__tablename__ = "items"的那个类。
+
+## 删除
+
+先查再改
+
+```python
+@app.delete("/items/{item_id}")
+async def delete_item(item_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Item).where(Item.id == item_id))
+    item = result.scalar_one_or_none()
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    await db.delete(item)
+    await db.commit()
+    return {"message": "Item deleted"}
+```

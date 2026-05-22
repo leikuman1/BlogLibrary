@@ -1,0 +1,12 @@
+slug: "misc"
+title: "杂记"
+subtitle: "临时笔记与未归档内容"
+description: "暂时无法归入明确知识书籍的内容，后续再拆分或归档。"
+tags:
+  - "杂记"
+status: "active"
+order: 999
+sections:
+  - id: "notes"
+    title: "笔记"
+    order: 1

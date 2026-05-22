@@ -1,0 +1,80 @@
+---
+title: "RabbitMQ新增死信队列"
+slug: "dead-letter-queue"
+book: "java"
+section: "project"
+order: 1
+date: 2026-04-21
+updated: 2026-04-21
+tags:
+  - "Java"
+  - "后端"
+  - "并发"
+summary: "这里重点是withArgument，前面的字符串是固定的,表示设置死信交换机和路由key"
+draft: false
+---
+## 添加一套常量
+
+``` java
+public static final String SECKILL_DLX = "seckill.order.dlx";
+public static final String SECKILL_DEAD_QUEUE = "seckill.order.dead.queue";
+public static final String SECKILL_DEAD_ROUTING_KEY = "seckill.order.dead";
+```
+
+## 给业务队列添加死信参数
+
+``` java
+@Bean
+public Queue seckillQueue() {
+    return QueueBuilder.durable(SECKILL_QUEUE)
+            .withArgument("x-dead-letter-exchange", SECKILL_DLX)
+            .withArgument("x-dead-letter-routing-key", SECKILL_DEAD_ROUTING_KEY)
+            .build();
+}
+```
+
+这里重点是withArgument，前面的字符串是固定的,表示设置死信交换机和路由key
+
+## 新增死信交换机Bean
+
+``` java
+@Bean
+public DirectExchange seckillDeadLetterExchange() {
+    return new DirectExchange(SECKILL_DLX, true, false);
+}
+```
+
+第一个参数是交换机名字，第二个是持久化，第三个是自动删除
+
+## 新增死信队列
+
+``` java
+@Bean
+public Queue seckillDeadLetterQueue() {
+    return QueueBuilder.durable(SECKILL_DEAD_QUEUE).build();
+}
+```
+
+用queuebuilder的durable方法构造一个消息队列
+
+## 构造队列和交换机的绑定关系
+
+``` java
+@Bean
+public Binding seckillDeadLetterBinding() {
+    return BindingBuilder.bind(seckillDeadLetterQueue())
+            .to(seckillDeadLetterExchange())
+            .with(SECKILL_DEAD_ROUTING_KEY);
+}
+```
+
+用BindingBuilder的bind方法链式绑定队列到交换机并设置routing key
+
+## 总结
+
+到这可以总结出RabbitMQ新增MQ的一般方法：
+
+1. 设置三个常量，分别是交换机名称，队列名称和路由key
+2. 设置交换机，队列和绑定关系的构造方法
+
+最后，如果我们在业务队列中重试一定次数后就channel.basicReject(msg.getMessageProperties().getDeliveryTag(), false)，消息就会被丢弃到死信队列中，我们就可以在死信队列中查看失败的消息并分析原因了。

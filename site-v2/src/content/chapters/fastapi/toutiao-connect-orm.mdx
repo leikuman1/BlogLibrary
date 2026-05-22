@@ -1,0 +1,79 @@
+---
+title: "接入ORM"
+slug: "toutiao-connect-orm"
+book: "fastapi"
+section: "project"
+order: 1
+date: 2026-04-25
+updated: 2026-04-25
+tags:
+  - "头条项目"
+  - "ORM"
+  - "后端"
+  - "Python"
+  - "API"
+summary: "在FastAPI中接入ORM可以让我们更方便地操作数据库，下面是一个简单的示例，使用SQLAlchemy作为ORM工具。 需要注意，SQLAlchemy包已经包含了异步模块，但是需要安装ai..."
+draft: false
+---
+在FastAPI中接入ORM可以让我们更方便地操作数据库，下面是一个简单的示例，使用SQLAlchemy作为ORM工具。
+需要注意，SQLAlchemy包已经包含了异步模块，但是需要安装aiomysql或asyncpg等异步数据库驱动来支持异步操作。
+
+首先安装必要的包：
+
+```bash
+pip install sqlalchemy[asyncio] aiomysql
+```
+
+然后配置数据库连接和会话：
+
+```python
+from collections.abc import AsyncGenerator
+
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+ASYNC_DATABASE_URL = "mysql+aiomysql://root:123456@localhost:3306/news_app?charset=utf8mb4"
+
+# 创建异步引擎
+async_engine = create_async_engine(
+    ASYNC_DATABASE_URL,
+    echo=True,
+    pool_pre_ping=True,
+)
+
+# 创建异步会话工厂
+AsyncSessionLocal = async_sessionmaker(
+    bind=async_engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+    autoflush=False,
+    autocommit=False,
+)
+
+
+# 依赖项，用于获取数据库会话
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+        finally:
+            await session.close()
+```
+
+在这个示例中，我们创建了一个异步数据库引擎，并定义了一个异步会话工厂。get_db函数是一个依赖项，可以在FastAPI的路由中使用，以便在请求期间获取数据库会话。
+
+接下来，我们可以在路由中使用这个依赖项来操作数据库：
+
+```python
+from fastapi import Depends
+from sqlalchemy import select
+@app.get("/items/")
+async def read_items(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Item))
+    items = result.scalars().all()
+    return items
+```
+
+在这个路由中，我们使用Depends(get_db)来获取数据库会话，并执行一个简单的查询来获取所有的Item对象。通过await db.execute()来执行查询，并使用scalars().all()来获取结果列表。

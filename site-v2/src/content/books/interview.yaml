@@ -1,0 +1,20 @@
+slug: "interview"
+title: "面经"
+subtitle: "面试复盘与表达准备"
+description: "记录面试题、面试复盘和自我表达准备。"
+tags:
+  - "面试"
+  - "复盘"
+  - "表达"
+status: "active"
+order: 110
+sections:
+  - id: "questions"
+    title: "面试题"
+    order: 1
+  - id: "self-review"
+    title: "自我表达"
+    order: 2
+  - id: "company"
+    title: "公司面试"
+    order: 3

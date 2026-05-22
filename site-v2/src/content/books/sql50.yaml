@@ -1,0 +1,17 @@
+slug: "sql50"
+title: "SQL 50"
+subtitle: "SQL 查询练习"
+description: "SQL 常用工具、高级查询和连接相关练习整理。"
+tags:
+  - "数据库"
+  - "SQL"
+  - "面试"
+status: "active"
+order: 100
+sections:
+  - id: "tools"
+    title: "常用工具"
+    order: 1
+  - id: "advanced-query"
+    title: "高级查询和连接"
+    order: 2

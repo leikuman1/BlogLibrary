@@ -1,0 +1,20 @@
+slug: "fastapi"
+title: "FastAPI"
+subtitle: "Python 后端接口开发"
+description: "从路由、依赖注入、ORM 到项目结构，整理 FastAPI 后端开发常用知识。"
+tags:
+  - "后端"
+  - "Python"
+  - "API"
+status: "active"
+order: 20
+sections:
+  - id: "basics"
+    title: "基础入门"
+    order: 1
+  - id: "database"
+    title: "数据库与 ORM"
+    order: 2
+  - id: "project"
+    title: "项目实践"
+    order: 3

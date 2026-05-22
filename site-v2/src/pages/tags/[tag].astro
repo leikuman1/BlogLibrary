@@ -1,0 +1,72 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { sortBooks, sortChapters, uniqueTags } from '../../lib/catalog';
+
+export async function getStaticPaths() {
+  const books = await getCollection('books');
+  const chapters = (await getCollection('chapters')).filter((chapter) => !chapter.data.draft);
+  return uniqueTags(books, chapters).map((tag) => ({
+    params: { tag },
+    props: { tag },
+  }));
+}
+
+const { tag } = Astro.props;
+const books = await getCollection('books');
+const chapters = (await getCollection('chapters')).filter((chapter) => !chapter.data.draft);
+const matchedBooks = sortBooks(books).filter((book) => book.data.tags.includes(tag));
+const matchedChapters = sortChapters(chapters).filter((chapter) => chapter.data.tags.includes(tag));
+const bookTitleBySlug = new Map(books.map((book) => [book.data.slug, book.data.title]));
+---
+
+<BaseLayout title={`标签：${tag}`} description={`查看 ${tag} 标签下的书籍和章节。`}>
+  <main class="site-shell page-main">
+    <div class="breadcrumb">
+      <a href="/">图书馆</a>
+      <span>/</span>
+      <span>标签</span>
+      <span>/</span>
+      <span>{tag}</span>
+    </div>
+
+    <section class="content-panel">
+      <h1 class="page-title">标签：{tag}</h1>
+      <p class="page-lead">共 {matchedBooks.length} 本书，{matchedChapters.length} 个章节。</p>
+
+      <div class="section-list">
+        <section class="section-block">
+          <h2 class="section-heading">相关书籍</h2>
+          {matchedBooks.length > 0 ? (
+            <div class="chapter-list">
+              {matchedBooks.map((book) => (
+                <a class="chapter-link" href={`/books/${book.data.slug}/`}>
+                  <strong>{book.data.title}</strong>
+                  <span>{book.data.description}</span>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p class="small-muted">暂无相关书籍。</p>
+          )}
+        </section>
+
+        <section class="section-block">
+          <h2 class="section-heading">相关章节</h2>
+          {matchedChapters.length > 0 ? (
+            <div class="chapter-list">
+              {matchedChapters.map((chapter) => (
+                <a class="chapter-link" href={`/books/${chapter.data.book}/${chapter.data.slug}/`}>
+                  <strong>{chapter.data.title}</strong>
+                  <span>{bookTitleBySlug.get(chapter.data.book)} · {chapter.data.summary}</span>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p class="small-muted">暂无相关章节。</p>
+          )}
+        </section>
+      </div>
+    </section>
+  </main>
+</BaseLayout>

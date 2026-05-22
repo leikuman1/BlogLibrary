@@ -1,0 +1,95 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { formatDate, sectionTitle, sortChapters } from '../../../lib/catalog';
+
+export async function getStaticPaths() {
+  const books = await getCollection('books');
+  const bookBySlug = new Map(books.map((book) => [book.data.slug, book]));
+  const chapters = (await getCollection('chapters')).filter((chapter) => !chapter.data.draft);
+
+  return chapters
+    .map((chapter) => {
+      const book = bookBySlug.get(chapter.data.book);
+      if (!book) return undefined;
+      return {
+        params: { book: book.data.slug, chapter: chapter.data.slug },
+        props: { book, chapter },
+      };
+    })
+    .filter(Boolean);
+}
+
+const { book, chapter } = Astro.props;
+const allBookChapters = sortChapters(
+  (await getCollection('chapters')).filter((item) => item.data.book === book.data.slug && !item.data.draft),
+  book,
+);
+const chapterIndex = allBookChapters.findIndex((item) => item.data.slug === chapter.data.slug);
+const previousChapter = chapterIndex > 0 ? allBookChapters[chapterIndex - 1] : undefined;
+const nextChapter = chapterIndex < allBookChapters.length - 1 ? allBookChapters[chapterIndex + 1] : undefined;
+const { Content, headings } = await render(chapter);
+const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3);
+---
+
+<BaseLayout title={chapter.data.title} description={chapter.data.summary}>
+  <main class="site-shell page-main">
+    <div class="breadcrumb">
+      <a href="/">图书馆</a>
+      <span>/</span>
+      <a href={`/books/${book.data.slug}/`}>{book.data.title}</a>
+      <span>/</span>
+      <span>{chapter.data.title}</span>
+    </div>
+
+    <div class="article-layout">
+      <article class="content-panel">
+        <header>
+          <p class="section-heading">{sectionTitle(book, chapter.data.section)}</p>
+          <h1 class="page-title">{chapter.data.title}</h1>
+          <p class="page-lead">{chapter.data.summary}</p>
+          <div class="mini-tags">
+            {chapter.data.tags.map((tag) => <a class="mini-tag" href={`/tags/${encodeURIComponent(tag)}/`}>{tag}</a>)}
+          </div>
+          <p class="small-muted" style="margin-top: 12px;">更新于 {formatDate(chapter.data.updated ?? chapter.data.date)}</p>
+        </header>
+
+        <div class="prose">
+          <Content />
+        </div>
+
+        <nav class="pager" aria-label="章节切换">
+          {previousChapter ? (
+            <a href={`/books/${book.data.slug}/${previousChapter.data.slug}/`}>
+              <span>上一篇</span>
+              <strong>{previousChapter.data.title}</strong>
+            </a>
+          ) : (
+            <div></div>
+          )}
+          {nextChapter ? (
+            <a href={`/books/${book.data.slug}/${nextChapter.data.slug}/`}>
+              <span>下一篇</span>
+              <strong>{nextChapter.data.title}</strong>
+            </a>
+          ) : (
+            <div></div>
+          )}
+        </nav>
+      </article>
+
+      <aside class="toc-panel">
+        <h2>本页目录</h2>
+        {tocHeadings.length > 0 ? (
+          <nav aria-label="本页目录">
+            {tocHeadings.map((heading) => (
+              <a href={`#${heading.slug}`}>{heading.text}</a>
+            ))}
+          </nav>
+        ) : (
+          <p class="small-muted">暂无目录。</p>
+        )}
+      </aside>
+    </div>
+  </main>
+</BaseLayout>

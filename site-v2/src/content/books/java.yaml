@@ -1,0 +1,23 @@
+slug: "java"
+title: "Java"
+subtitle: "语法、并发与工程实践"
+description: "Java 语法、集合、并发编程、JVM 和项目实践的知识书架。"
+tags:
+  - "Java"
+  - "后端"
+  - "并发"
+status: "active"
+order: 50
+sections:
+  - id: "syntax"
+    title: "基本语法"
+    order: 1
+  - id: "concurrency"
+    title: "并发编程"
+    order: 2
+  - id: "jvm"
+    title: "JVM"
+    order: 3
+  - id: "project"
+    title: "项目实践"
+    order: 4

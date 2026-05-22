@@ -1,0 +1,17 @@
+slug: "python-backend"
+title: "Python 后端"
+subtitle: "数据库连接与接口实践"
+description: "Python 后端开发中的数据库连接、接口连接和项目基础实践。"
+tags:
+  - "后端"
+  - "Python"
+  - "数据库"
+status: "active"
+order: 80
+sections:
+  - id: "database"
+    title: "数据库连接"
+    order: 1
+  - id: "api"
+    title: "接口实践"
+    order: 2

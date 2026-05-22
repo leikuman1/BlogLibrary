@@ -1,0 +1,39 @@
+---
+title: "按照分类统计薪水"
+slug: "salary-by-category"
+book: "sql50"
+section: "advanced-query"
+order: 1
+date: 2026-04-19
+updated: 2026-04-19
+tags:
+  - "数据库"
+  - "SQL"
+  - "面试"
+summary: "UNION ALL"
+draft: false
+---
+## 思路
+三个select,然后union all在一起
+
+```sql
+SELECT 'Low Salary' AS category, COUNT(*) AS accounts_count
+FROM Accounts
+WHERE income < 20000
+
+UNION ALL
+
+SELECT 'Average Salary' AS category, COUNT(*) AS accounts_count
+FROM Accounts
+WHERE income BETWEEN 20000 AND 50000
+
+UNION ALL
+
+SELECT 'High Salary' AS category, COUNT(*) AS accounts_count
+FROM Accounts
+WHERE income > 50000;
+
+```
+
+## 所用工具函数或关键字
+- `UNION ALL`：合并多个查询结果，保留重复行。

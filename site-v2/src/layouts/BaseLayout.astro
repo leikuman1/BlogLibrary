@@ -1,0 +1,44 @@
+---
+import '../styles/global.css';
+
+type Props = {
+  title?: string;
+  description?: string;
+};
+
+const {
+  title = "L's Library",
+  description = '一个以图书馆方式组织知识点的个人技术博客。',
+} = Astro.props;
+
+const pageTitle = title === "L's Library" ? title : `${title} | L's Library`;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{pageTitle}</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="site-shell topbar-inner">
+        <a class="brand" href="/" aria-label="L's Library 首页">
+          <span class="brand-mark">L</span>
+          <span>L's Library</span>
+        </a>
+        <nav class="nav-links" aria-label="主导航">
+          <a href="/">图书馆</a>
+          <a href="/search/">搜索</a>
+          <a href="/tags/工程化/">工程化</a>
+          <a href="/tags/后端/">后端</a>
+        </nav>
+      </div>
+    </header>
+    <slot />
+  </body>
+</html>

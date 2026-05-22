@@ -1,0 +1,17 @@
+slug: "rag"
+title: "RAG"
+subtitle: "检索增强生成"
+description: "RAG 的离线建库、在线检索、重排序和上下文构造流程。"
+tags:
+  - "AI"
+  - "大模型"
+  - "检索"
+status: "active"
+order: 30
+sections:
+  - id: "concept"
+    title: "基础概念"
+    order: 1
+  - id: "workflow"
+    title: "工作流程"
+    order: 2
