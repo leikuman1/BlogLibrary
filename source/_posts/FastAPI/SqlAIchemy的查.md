@@ -1,0 +1,46 @@
+---
+title: SqlAIchemy的查
+categories: [FastAPI]
+tags: [SQLAlchemy]
+date: 2026-04-25 10:20:39
+---
+
+## 查询
+
+先来看看简单的查询方式
+
+```python
+from sqlalchemy import select
+@app.get("/items/")
+async def read_items(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Item)).where(Item.name == "item1")
+    items = result.scalars().all()
+    return items
+```
+
+这里可以总结一下查询的一般方式：await db.execute(select(模型).where(条件))，然后通过scalars()方法把结果转换为指定对象列表，最后通过all()方法获取所有结果。
+
+### 模糊查询和多条件查询
+
+```python
+@app.get("/items/")
+async def read_items(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Item).where(Item.name.like("%item%")|Item.price > 10))
+    items = result.scalars().all()
+    return items
+```
+
+跟mysql里一样，like表示模糊查询，%表示任意字符，|表示或，&表示且。
+
+### 聚合和分页
+
+```python
+@app.get("/items/")
+async def read_items(db: AsyncSession = Depends(get_db), page: int = 0, page_size: int = 10):
+    result = await db.execute(select(func.count(Item.id)))
+    total = result.scalar()
+    skip = (page - 1) * page_size
+    result = await db.execute(select(Item).offset(skip).limit(page_size))
+    items = result.scalars().all()
+    return {"total": total, "items": items}
+```

@@ -1,0 +1,29 @@
+---
+title: 统一构建router
+categories: [FastAPI]
+tags: [头条项目]
+date: 2026-04-25 15:32:36
+---
+
+## 统一构建router
+
+在FastAPI中，我们可以通过APIRouter来统一构建路由，这样可以将不同的路由分组，方便管理和维护。
+
+比如
+
+```python
+from fastapi import APIRouter
+router = APIRouter(prefix="/api/news", tags=["news"])
+@router.get("/categories")
+async def get_categories():
+    return {"msg": "success"}
+```
+
+这里前缀/api/news表示这个路由的公共前缀，tags=["news"]表示这个路由的标签，可以在文档中进行分类展示。
+然后在主应用中引入这个router，如
+
+```python
+app.include_router(news.router)
+```
+
+这样就可以将这个router中的所有路由都包含到主应用中，并且自动添加前缀/api/news。

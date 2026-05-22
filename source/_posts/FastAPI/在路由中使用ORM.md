@@ -1,0 +1,54 @@
+---
+title: 在路由中使用ORM
+categories: [FastAPI]
+tags: [ORM]
+date: 2026-04-25 09:45:58
+---
+
+## yield and await
+
+yield 是一个生成器函数的关键字，它可以暂停函数的执行，并返回一个值给调用者。当函数再次被调用时，它会从上次暂停的地方继续执行，而不是从头开始执行。可以用来惰性求值，慢慢处理大量数据，防止内存溢出。
+
+await 是一个异步函数的关键字，它可以暂停函数的执行，等待一个异步操作完成。当异步操作完成后，函数会继续执行，而不会阻塞其他代码的执行。可以用来处理IO密集型任务，提高程序的性能。
+如果调用一个异步函数不使用await，那么这个函数会返回一个协程对象，而
+函数结果不一定执行完成，所以在使用异步函数时，必须使用await来等待它的结果。
+
+**总结一下就是调用异步函数必须使用await来等待它的结果，而yield是生成器函数的关键字，可以暂停函数的执行，并返回一个值给调用者。
+
+## 在路由中使用ORM
+
+先创建一个会话工厂
+
+```python
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+DATABASE_URL = "mysql+aiomysql://user:password@localhost/dbname"
+engine = create_engine(DATABASE_URL)
+Async_SessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+async def get_db():
+    async with Async_SessionLocal() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception as e:
+            await session.rollback()
+            raise e
+        finally:
+            await session.close()
+```
+
+这个函数会创建一个数据库会话，并在使用完后自动提交事务或回滚事务，并关闭会话。
+
+在路由中使用这个函数来获取数据库会话：
+
+```python
+from fastapi import Depends
+@app.get("/items/")
+async def read_items(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Item))
+    items = result.scalars().all()
+    return items
+```
+
+这里的Depends(get_db)表示这个参数是一个依赖项，FastAPI会自动调用get_db函数来获取数据库会话，并将其作为参数传递给read_items函数。这样我们就可以在路由中使用ORM来操作数据库了。
