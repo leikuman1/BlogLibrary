@@ -22,3 +22,12 @@ merge会产生一次新的commit，指向两个父commit
 ![在main上merge fixBug](img/git-merge-bugFix.png)
 
 merge的优势在于保留了每个merge的完整历史记录，缺点是每次merge都会多产生一个commit，如果分支较多，历史记录会变得很复杂
+一般在main分支上merge dev
+
+## rebase
+
+```bash
+git rebase <branch> # 将当前分支的commit移到branch分支的最新commit之后
+```
+
+一般在dev分支上rebase main
